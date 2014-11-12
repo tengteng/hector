@@ -108,3 +108,40 @@ func RegRMSE(predictions []*RealPrediction) float64 {
 	return math.Sqrt(ret / n)
 }
 
+func KSTest(predictions0 []*LabelPrediction) float64 {
+    predictions := make([]*LabelPrediction, len(predictions0), len(predictions0))
+    for n, pred := range predictions0 {
+        predictions[n] = pred
+    }
+    prediction := func(p1, p2 *LabelPrediction) bool {
+        return p1.Prediction > p2.Prediction
+    }
+    By(prediction).Sort(predictions)
+
+    var numPos float64 = 0.0
+    var numNeg float64 = 0.0
+    for _, pred := range predictions {
+        if pred.Label > 0 {
+            numPos += 1.0
+        } else {
+            numNeg += 1.0
+        }
+    }
+
+    if numPos == 0 || numNeg == 0 {
+        return 0.0
+    }
+    var tp float64 = 0.0  // true positive
+    var fp float64 = 0.0  // false positive
+    var diff float64 = 0.0
+    scale := numPos / numNeg
+    for _, lp := range predictions {
+        if lp.Label > 0 {
+            tp += 1.0
+        } else {
+            fp += 1.0
+        }
+        diff = math.Max(diff, tp - fp*scale)
+    }
+    return diff / numPos
+}
