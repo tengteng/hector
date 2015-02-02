@@ -1,13 +1,8 @@
 data
-hector-mc-cv
-hector-mc-run
-hector-stack
-hector-server
 code.google.com
-hector-cv
-hector-run
-hector-feature-combination
 data/
+model/
+bin/*
 *.train
 *.test
 dwfa
