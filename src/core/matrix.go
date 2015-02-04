@@ -1,5 +1,7 @@
 package core
 
+import "util"
+
 type Matrix struct {
 	Data map[int64]*Vector
 }
@@ -87,4 +89,15 @@ func (m *Matrix) ElemWiseAddMatrix(n *Matrix) *Matrix {
 		}
 	}
 	return ret
+}
+
+func (m *Matrix) ToString() []byte {
+	sb := util.StringBuilder{}
+	for row, vec := range m.Data {
+		sb.Int64(row)
+		sb.Write("->")
+		sb.WriteBytes(vec.ToString())
+		sb.Write("\n")
+	}
+	return sb.Bytes()
 }

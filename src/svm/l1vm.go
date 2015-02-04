@@ -1,6 +1,7 @@
 package svm
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"strconv"
@@ -91,6 +92,9 @@ func (c *L1VM) Train(dataset *core.DataSet) {
 		c.sv = append(c.sv, dataset.Samples[negative[k]].GetFeatureVector())
 	}
 
+	fmt.Println("SV size: ", len(c.sv))
+	fmt.Println("original sample number: ", len(dataset.Samples))
+
 	for _, si := range dataset.Samples {
 		xi := si.GetFeatureVector()
 		tsample := core.NewSample()
@@ -99,7 +103,9 @@ func (c *L1VM) Train(dataset *core.DataSet) {
 			tsample.AddFeature(core.Feature{Id: int64(j), Value: RBFKernel(xi, xj, c.radius)})
 		}
 		kernel_dataset.AddSample(tsample)
+		fmt.Println("Feature size: ", len(tsample.Features))
 	}
+	fmt.Println("Sample size: ", len(kernel_dataset.Samples))
 
 	c.ftrl.Train(kernel_dataset)
 }

@@ -46,6 +46,7 @@ Here, Method include
 11. svm : svm optimizaed by SMO (current, its linear svm)
 12. l1vm : vector machine with L1 regularization by RBF kernel
 13. knn : k-nearest neighbor classification
+14. ann : artificial neural network classification
 
 hector-run.go will help you train one algorithm on train dataset and test it on test dataset, you can run it by following steps:
 

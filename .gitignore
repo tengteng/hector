@@ -18,6 +18,7 @@ test
 *.o
 *.a
 *.so
+*.go.swp
 
 # Folders
 _obj

@@ -97,6 +97,10 @@ func (algo *NeuralNetwork) Train(dataset *core.DataSet) {
 		}
 	}
 
+	fmt.Println("init done.")
+	fmt.Println("L1:\n", string(algo.Model.L1.ToString()))
+	fmt.Println("L2:\n", string(algo.Model.L2.ToString()))
+
 	for step := 0; step < algo.Params.Steps; step++ {
 		if algo.Params.Verbose <= 0 {
 			fmt.Printf(".")
@@ -115,9 +119,11 @@ func (algo *NeuralNetwork) Train(dataset *core.DataSet) {
 				for _, f := range sample.Features {
 					sum += f.Value * wi.GetValue(f.Id)
 				}
-				y.Data[i] = util.Sigmoid(sum)
+				y.SetValue(i, util.Sigmoid(sum))
 			}
-			y.Data[algo.Params.Hidden] = 1.0
+			y.SetValue(algo.Params.Hidden, 1.0)
+			fmt.Println("Step ", step, " Y:")
+			fmt.Println(string(y.ToString()))
 			for i := int64(0); i <= algo.MaxLabel; i++ {
 				sum := float64(0)
 				for j := int64(0); j <= algo.Params.Hidden; j++ {
@@ -128,6 +134,9 @@ func (algo *NeuralNetwork) Train(dataset *core.DataSet) {
 			z = z.SoftMaxNorm()
 			e.SetValue(int64(sample.Label), 1.0)
 			e.AddVector(z, -1.0)
+
+			fmt.Println("Z: ", string(z.ToString()))
+			fmt.Println("E: ", string(e.ToString()))
 
 			for i := int64(0); i <= algo.Params.Hidden; i++ {
 				delta := float64(0)

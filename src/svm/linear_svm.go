@@ -91,6 +91,8 @@ func (c *LinearSVM) Train(dataset *core.DataSet) {
 		fmt.Println("XXXXX: ", c.w.Data)
 	}
 
+	fmt.Println("Phase 2")
+
 	da0 := 0.0
 	for {
 		da := 0.0
@@ -106,6 +108,7 @@ func (c *LinearSVM) Train(dataset *core.DataSet) {
 			if math.Abs(pg) > 1e-9 {
 				ai0 := ai
 				ai = math.Min(math.Max(0, ai-g/c.xx[i]), c.C)
+				fmt.Println("For sample ", i, " ai = ", ai, " xx[", i, "] = ", c.xx[i], " g = ", g, " ai0 = ", ai0)
 				c.w.AddVector(c.sv[i], (ai-ai0)*c.y[i])
 				da += math.Abs(ai - ai0)
 			}
