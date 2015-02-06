@@ -119,7 +119,7 @@ func PrepareParams() (string, string, string, string, map[string]string) {
 	k := flag.String("k", "3", "neighborhood size of knn")
 	radius := flag.String("radius", "1.0", "radius of RBF kernel")
 	sv := flag.String("sv", "18", "support vector count for l1vm")
-	hidden := flag.Int64("hidden", 50, "hidden neuron number")
+	hidden := flag.Int64("hidden", 10, "hidden neuron number")
 	profile := flag.String("profile", "", "profile file name")
 	model := flag.String("model", "", "model file name")
 	action := flag.String("action", "", "train or test or preprocess, do both if action is empty string")

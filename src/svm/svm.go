@@ -1,7 +1,7 @@
 package svm
 
 import (
-	"fmt"
+	// "fmt"
 	"math"
 	"math/rand"
 	"strconv"
@@ -90,7 +90,6 @@ func (c *SVM) Train(dataset *core.DataSet) {
 		c.b += c.PredictVector(x) - c.y[k]
 	}
 	c.b /= float64(len(c.sv))
-	fmt.Println(c.b)
 
 	for step := 0; step < 100; step++ {
 		da := 0.0
@@ -168,7 +167,6 @@ func (c *SVM) Train(dataset *core.DataSet) {
 			c.a[best_values.i2] = best_values.a2
 		}
 		da /= float64(len(c.sv))
-		fmt.Printf(".. %f %f\n", da, c.b)
 		if da < c.e {
 			break
 		}

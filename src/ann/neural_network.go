@@ -1,10 +1,15 @@
 package ann
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"math"
 	"math/rand"
+	"os"
 	"strconv"
+
+	"github.com/golang/glog"
 
 	"core"
 	"util"
@@ -44,11 +49,31 @@ func RandomInitVector(dim int64) *core.Vector {
 }
 
 func (self *NeuralNetwork) SaveModel(path string) {
-
+	fmt.Println("SaveModel to: ", path)
+	sb := util.StringBuilder{}
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(self)
+	if err != nil {
+		glog.Errorf("encode: %v\n", err)
+	}
+	sb.Write(buf.String())
+	sb.WriteToFile(path)
 }
 
 func (self *NeuralNetwork) LoadModel(path string) {
+	fmt.Println("LoadModel from: ", path)
+	file, _ := os.Open(path)
+	defer file.Close()
 
+	var buf bytes.Buffer
+	buf.ReadFrom(file)
+	dec := gob.NewDecoder(&buf)
+	err := dec.Decode(self)
+	if err != nil {
+		glog.Errorf("decode error: %v\n", err)
+		return
+	}
 }
 
 func (algo *NeuralNetwork) Init(params map[string]string) {
@@ -97,10 +122,6 @@ func (algo *NeuralNetwork) Train(dataset *core.DataSet) {
 		}
 	}
 
-	fmt.Println("init done.")
-	fmt.Println("L1:\n", string(algo.Model.L1.ToString()))
-	fmt.Println("L2:\n", string(algo.Model.L2.ToString()))
-
 	for step := 0; step < algo.Params.Steps; step++ {
 		if algo.Params.Verbose <= 0 {
 			fmt.Printf(".")
@@ -122,8 +143,6 @@ func (algo *NeuralNetwork) Train(dataset *core.DataSet) {
 				y.SetValue(i, util.Sigmoid(sum))
 			}
 			y.SetValue(algo.Params.Hidden, 1.0)
-			fmt.Println("Step ", step, " Y:")
-			fmt.Println(string(y.ToString()))
 			for i := int64(0); i <= algo.MaxLabel; i++ {
 				sum := float64(0)
 				for j := int64(0); j <= algo.Params.Hidden; j++ {
@@ -134,9 +153,6 @@ func (algo *NeuralNetwork) Train(dataset *core.DataSet) {
 			z = z.SoftMaxNorm()
 			e.SetValue(int64(sample.Label), 1.0)
 			e.AddVector(z, -1.0)
-
-			fmt.Println("Z: ", string(z.ToString()))
-			fmt.Println("E: ", string(e.ToString()))
 
 			for i := int64(0); i <= algo.Params.Hidden; i++ {
 				delta := float64(0)
