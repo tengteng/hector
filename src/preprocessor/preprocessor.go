@@ -1,4 +1,4 @@
-package main
+package preprocessor
 
 import (
 	"bufio"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -44,36 +45,40 @@ func ReadMetadata(metadata_file_path string) *FeatureMetadata {
 func parseField(index int, field string, field_type string,
 	string_id_lookup *map[string]int, frequency_lookup *map[int]int,
 	fixed_feature_num bool, initial_numeric_feature_number int) string {
-	fmt.Println("input: index = ", index, " field = ", field, " field_type = ", field_type)
 	if field_type == "int" || field_type == "float" {
 		_, err := strconv.ParseFloat(field, 64)
 		if err != nil {
-			glog.Errorf("Error when converting a numeric feature value: %v\n", err)
+			glog.Errorf(
+				"Error when converting a numeric feature value: %v\n", err)
 			return ""
 		}
-		return strconv.Itoa(index) + ":" + field
+
+		if !fixed_feature_num {
+			// Do mapping, reassign featureId to numerical features.
+		}
+
+		return fmt.Sprintf("%d:%s", index, field)
 	} else if field_type == "string" {
 		if fixed_feature_num {
 			if value, ok := (*string_id_lookup)[field]; ok {
-				return strconv.Itoa(index) + ":" + strconv.Itoa(value)
+				return fmt.Sprintf("%d:%d", index, value)
 			} else {
-				(*string_id_lookup)[field] = len(*string_id_lookup)
-				return strconv.Itoa(index) + ":" + strconv.Itoa((*string_id_lookup)[field])
+				(*string_id_lookup)[field] =
+					len(*string_id_lookup)
+				return fmt.Sprintf("%d:%d", index,
+					(*string_id_lookup)[field])
 			}
 		} else {
-			var id string
-			var frequency string
-			if value, ok := (*string_id_lookup)[field]; ok {
-				(*frequency_lookup)[value]++
-				id = strconv.Itoa(value)
-				frequency = strconv.Itoa((*frequency_lookup)[value])
+			// Generate frequency dictionary and return.
+			if id, ok := (*string_id_lookup)[field]; ok {
+				(*frequency_lookup)[id]++
 			} else {
-				(*string_id_lookup)[field] = len(*string_id_lookup) + initial_numeric_feature_number
-				(*frequency_lookup)[value] = 1
-				id = strconv.Itoa(value)
-				frequency = "1"
+				id = len(*string_id_lookup) +
+					initial_numeric_feature_number
+				(*string_id_lookup)[field] = id
+				(*frequency_lookup)[id] = 1
 			}
-			return id + ":" + frequency
+			return ""
 		}
 	} else {
 		glog.Errorf("Error unknown feature type: %s\n", field_type)
@@ -82,7 +87,7 @@ func parseField(index int, field string, field_type string,
 	return ""
 }
 
-func ReadData(meta *FeatureMetadata) {
+func ReadData(meta *FeatureMetadata) *[]string {
 	fileList := []string{}
 	err := filepath.Walk(meta.INPUT_FILE_DIR,
 		func(path string, f os.FileInfo, err error) error {
@@ -103,42 +108,39 @@ func ReadData(meta *FeatureMetadata) {
 	// 1. default type is string;
 	// 2. string type features as text STRING, the result featureId will be
 	// string dictionary Id, the value will be the string frequency.
-	feature_types := map[string]string{}
+	feature_types := map[int]string{}
 	var initial_numeric_feature_number int
 	if meta.FIXED_FEATURE_NUM {
 		for i, feature_type := range meta.FEATURE_TYPES.([]interface{}) {
-			feature_types[strconv.Itoa(i)] = feature_type.(string)
+			feature_types[i] = feature_type.(string)
 		}
 	} else {
-		feature_type_config := meta.FEATURE_TYPES.(map[string]interface{})
-		feature_types["default_type"] = feature_type_config["default_type"].(string)
-		for _, exception_type := range feature_type_config["exception_types"].([]interface{}) {
+		feature_type_config :=
+			meta.FEATURE_TYPES.(map[string]interface{})
+		exception_types := feature_type_config["exception_types"].([]interface{})
+		for _, exception_type := range exception_types {
 			feature_index := int(exception_type.(map[string]interface{})["feature_index"].(float64))
 			feature_type := exception_type.(map[string]interface{})["feature_type"].(string)
-			feature_types[strconv.Itoa(feature_index)] = feature_type
+			feature_types[feature_index] = feature_type
 		}
-		if feature_types["default_type"] == "string" {
-			initial_numeric_feature_number = len(feature_types) - 1
-		} else {
-			for _, feature_type := range feature_types {
-				if feature_type {
-				}
-			}
-		}
+		initial_numeric_feature_number = len(feature_types)
 	}
-	fmt.Println("XXXX: ", feature_types)
+
+	result_date := []string{}
 
 	for _, filePath := range fileList {
 		file, _ := os.Open(filePath)
 		defer file.Close()
 
-		string_type_feature_dictionary := map[string]int{}
-		string_type_frequency_lookup := map[int]int{}
+		string_id_lookup := map[string]int{}
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
+			frequency_lookup := map[int]int{}
 			line_str := strings.Trim(scanner.Text(), " ")
 			line := strings.Split(line_str, meta.DELIMETER)
 			feature_vec := []string{}
+			case_label := ""
+			current_feature_id := -1
 
 			for i, field := range line {
 				// If feature number is fixed but number of
@@ -148,20 +150,20 @@ func ReadData(meta *FeatureMetadata) {
 					len(line) != meta.FEATURE_NUM+1 {
 					glog.Errorf("Error case format: %v\n",
 						line)
-					return
+					return nil
 				}
 
 				// Deal with the label field.
 				if i == meta.LABEL_COLUMN_INDEX {
 					label, e := strconv.Atoi(field)
 					if e != nil {
-						glog.Errorf("Error when converting label: %v\n", err)
-						return
+						glog.Errorf(
+							"Error when converting label: %v\n", err)
+						return nil
 					}
 					// We want labels always starts from 0.
-					// XXX should be leftmost!
-					feature_vec = append(feature_vec,
-						strconv.Itoa(label-meta.LABEL_START))
+					case_label = strconv.Itoa(label -
+						meta.LABEL_START)
 					continue
 				}
 
@@ -171,37 +173,43 @@ func ReadData(meta *FeatureMetadata) {
 					feature_idx--
 				}
 				feature_type := ""
-				if _, ok := feature_types[strconv.Itoa(feature_idx)]; !ok {
+				if _, ok := feature_types[feature_idx]; !ok {
 					if !meta.FIXED_FEATURE_NUM {
-						feature_type = feature_types["default_type"]
+						feature_type = "string"
 					}
 				} else {
-					feature_type = feature_types[strconv.Itoa(feature_idx)]
+					feature_type =
+						feature_types[feature_idx]
+					current_feature_id++
 				}
-				feature_str := parseField(feature_idx, field,
-					feature_type,
-					&string_type_feature_dictionary, &string_type_frequency_lookup,
-					meta.FIXED_FEATURE_NUM, initial_numeric_feature_number)
-				fmt.Println(feature_str)
+				feature_str := parseField(current_feature_id,
+					field, feature_type, &string_id_lookup,
+					&frequency_lookup,
+					meta.FIXED_FEATURE_NUM,
+					initial_numeric_feature_number)
+				if feature_str != "" {
+					feature_vec = append(feature_vec,
+						feature_str)
+				}
 			}
+			// Append frequency_lookup str to feature_str
+			if len(frequency_lookup) != 0 {
+				keys := make([]int, len(frequency_lookup))
+				i := 0
+				for idx := range frequency_lookup {
+					keys[i] = idx
+					i++
+				}
+				sort.Ints(keys)
+				for _, idx := range keys {
+					feature_vec = append(feature_vec,
+						fmt.Sprintf("%d:%d", idx, frequency_lookup[idx]))
+				}
+			}
+			result_date = append(result_date,
+				fmt.Sprintf("%s %s\n", case_label,
+					strings.Join(feature_vec, " ")))
 		}
 	}
-}
-
-func main() {
-	meta := ReadMetadata("./features.metadata.example.1")
-	fmt.Println(meta)
-	fmt.Println("file_path: ", meta.INPUT_FILE_DIR)
-	fmt.Println("delimeter: ", meta.DELIMETER)
-	fmt.Println("feature_types: ", meta.FEATURE_TYPES)
-	fmt.Println("has_feature_index: ", meta.HAS_FEATURE_INDEX)
-	ReadData(meta)
-
-	meta = ReadMetadata("./features.metadata.example.2")
-	fmt.Println(meta)
-	fmt.Println("delimeter: ", meta.DELIMETER)
-	fmt.Println("feature_types: ", meta.FEATURE_TYPES)
-	fmt.Println("has_feature_index: ", meta.HAS_FEATURE_INDEX)
-	ReadData(meta)
-
+	return &result_date
 }
