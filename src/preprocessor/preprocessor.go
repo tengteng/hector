@@ -50,11 +50,6 @@ func parseField(index int, field string, field_type string,
 				"Error when converting a numeric feature value: %v\n", err)
 			return ""
 		}
-
-		if !fixed_feature_num {
-			// Do mapping, reassign featureId to numerical features.
-		}
-
 		return fmt.Sprintf("%d:%s", index, field)
 	} else if field_type == "string" {
 		if fixed_feature_num {
@@ -80,7 +75,6 @@ func parseField(index int, field string, field_type string,
 		}
 	} else {
 		glog.Errorf("Error unknown feature type: %s\n", field_type)
-		return ""
 	}
 	return ""
 }
@@ -224,4 +218,9 @@ func ReadData(meta *FeatureMetadata) *[]string {
 		}
 	}
 	return &result_date
+}
+
+func Run(execution_plan_path string) {
+	meta := NewMetadata(execution_plan_path)
+	ReadData(meta)
 }

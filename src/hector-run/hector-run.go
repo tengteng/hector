@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"preprocessor"
 	"runner"
 )
 
@@ -24,5 +25,11 @@ func main() {
 		auc, _, _ := runner.AlgorithmTest(classifier, test, pred, params)
 		fmt.Println("AUC:")
 		fmt.Println(auc)
+	} else if action == "preprocess" {
+		if execution_plan_path, ok := params["execution_plan_path"]; ok {
+			preprocessor.Run(execution_plan_path)
+		} else {
+			fmt.Println("No execution_plan_path found in config.")
+		}
 	}
 }

@@ -126,6 +126,7 @@ func PrepareParams() (string, string, string, string, map[string]string) {
 	core := flag.Int("core", 2, "core number when run program")
 	dt_sample_ratio := flag.String("dt-sample-ratio", "1.0", "sampling ratio when split feature in decision tree")
 	dim := flag.String("dim", "1", "input space dimension")
+	execution_plan_path := flag.String("execution_plan_path", "", "execution plan file location.")
 
 	flag.Parse()
 	runtime.GOMAXPROCS(*core)
@@ -162,6 +163,7 @@ func PrepareParams() (string, string, string, string, map[string]string) {
 	params["method"] = *method
 	params["dt-sample-ratio"] = *dt_sample_ratio
 	params["dim"] = *dim
+	params["execution_plan_path"] = *execution_plan_path
 
 	fmt.Println(params)
 	return *train_path, *test_path, *pred_path, *method, params
