@@ -13,11 +13,9 @@ import (
 	"github.com/golang/glog"
 )
 
-var OUTPUT_SUFFIX = "_out"
-
 type FeatureMetadata struct {
 	INPUT_FILE_DIR     string
-	OUTPUT_FILE_DIR    string
+	OUTPUT_FILE        string
 	FIXED_FEATURE_NUM  bool
 	FEATURE_NUM        int
 	DELIMETER          string
@@ -27,18 +25,18 @@ type FeatureMetadata struct {
 	HAS_FEATURE_INDEX  bool
 }
 
-func ReadMetadata(metadata_file_path string) *FeatureMetadata {
+func NewMetadata(metadata_file_path string) *FeatureMetadata {
 	file, err := os.Open(metadata_file_path)
 	if err != nil {
 		panic(err)
 	}
 	decoder := json.NewDecoder(file)
-	feature_meta := FeatureMetadata{}
-	err = decoder.Decode(&feature_meta)
+	meta := FeatureMetadata{}
+	err = decoder.Decode(&meta)
 	if err != nil {
 		glog.Errorf("error: %v\n", err)
 	}
-	return &feature_meta
+	return &meta
 }
 
 // parseField converts raw feature to featureId:featureValue.
@@ -203,12 +201,26 @@ func ReadData(meta *FeatureMetadata) *[]string {
 				sort.Ints(keys)
 				for _, idx := range keys {
 					feature_vec = append(feature_vec,
-						fmt.Sprintf("%d:%d", idx, frequency_lookup[idx]))
+						fmt.Sprintf("%d:%d", idx,
+							frequency_lookup[idx]))
 				}
 			}
 			result_date = append(result_date,
 				fmt.Sprintf("%s %s\n", case_label,
 					strings.Join(feature_vec, " ")))
+		}
+	}
+
+	// Write to disk if output exists.
+	if meta.OUTPUT_FILE != "" {
+		output_file, err := os.Create(meta.OUTPUT_FILE)
+		if err != nil {
+			panic(err)
+		}
+		defer output_file.Close()
+
+		for _, line := range result_date {
+			output_file.WriteString(line)
 		}
 	}
 	return &result_date

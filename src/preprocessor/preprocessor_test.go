@@ -6,12 +6,12 @@ import (
 )
 
 func Test1(t *testing.T) {
-	meta := ReadMetadata("./features.metadata.example.1")
+	meta := NewMetadata("./features.metadata.example.1")
 	if meta == nil {
 		t.Errorf("Failed to read metadata.\n")
 	}
 
-	if meta.INPUT_FILE_DIR != "./example.1" {
+	if meta.INPUT_FILE_DIR != "./example.1.input" {
 		t.Errorf("Incorrect filepath.\n")
 	}
 
@@ -40,12 +40,12 @@ func Test1(t *testing.T) {
 }
 
 func Test2(t *testing.T) {
-	meta := ReadMetadata("./features.metadata.example.2")
+	meta := NewMetadata("./features.metadata.example.2")
 	if meta == nil {
 		t.Errorf("Failed to read metadata\n")
 	}
 
-	if meta.INPUT_FILE_DIR != "./example.2" {
+	if meta.INPUT_FILE_DIR != "./example.2.input" {
 		t.Errorf("Incorrect filepath.\n")
 	}
 
