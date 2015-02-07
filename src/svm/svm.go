@@ -1,12 +1,15 @@
 package svm
 
 import (
-	// "fmt"
+	"bufio"
 	"math"
 	"math/rand"
+	"os"
 	"strconv"
+	"strings"
 
 	"core"
+	"util"
 )
 
 type SVM struct {
@@ -22,11 +25,25 @@ type SVM struct {
 }
 
 func (self *SVM) SaveModel(path string) {
-
+	sb := util.StringBuilder{}
+	sb.Write(self.w.ToString())
+	sb.Write("\n")
+	sb.Float(self.b)
+	sb.Write("\n")
+	sb.WriteToFile(path)
 }
 
 func (self *SVM) LoadModel(path string) {
+	file, _ := os.Open(path)
+	defer file.Close()
 
+	r := bufio.NewReader(file)
+	line, _ := r.ReadString('\n')
+	line = strings.Trim(line, "\n")
+	self.w.FromString(line)
+	line, _ = r.ReadString('\n')
+	line = strings.Trim(line, "\n")
+	self.b, _ = strconv.ParseFloat(line, 64)
 }
 
 type SVMValues struct {

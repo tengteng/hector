@@ -19,7 +19,7 @@ func NewVector() *Vector {
 	return &v
 }
 
-func (v *Vector) ToString() []byte {
+func (v *Vector) ToBytes() []byte {
 	sb := util.StringBuilder{}
 	for key, value := range v.Data {
 		sb.Int64(key)
@@ -28,6 +28,17 @@ func (v *Vector) ToString() []byte {
 		sb.Write("|")
 	}
 	return sb.Bytes()
+}
+
+func (v *Vector) ToString() string {
+	sb := util.StringBuilder{}
+	for key, value := range v.Data {
+		sb.Int64(key)
+		sb.Write(":")
+		sb.Float(value)
+		sb.Write("|")
+	}
+	return sb.String()
 }
 
 func (v *Vector) FromString(buf string) {

@@ -96,7 +96,7 @@ func (m *Matrix) ToString() []byte {
 	for row, vec := range m.Data {
 		sb.Int64(row)
 		sb.Write("->")
-		sb.WriteBytes(vec.ToString())
+		sb.WriteBytes(vec.ToBytes())
 		sb.Write("\n")
 	}
 	return sb.Bytes()
