@@ -34,7 +34,7 @@ func (s *Sample) Clone() *Sample {
 	return ret
 }
 
-func (s *Sample) ToString(includePrediction bool) []byte {
+func (s *Sample) ToBytes(includePrediction bool) []byte {
 	sb := util.StringBuilder{}
 	sb.Int(s.Label)
 	sb.Write(" ")
@@ -49,6 +49,20 @@ func (s *Sample) ToString(includePrediction bool) []byte {
 		sb.Write(" ")
 	}
 	return sb.Bytes()
+}
+
+func (s *Sample) ToString(includePrediction bool) string {
+	sb := util.StringBuilder{}
+	sb.Int(s.Label)
+	sb.Write(" ")
+	if includePrediction {
+		sb.Float(s.Prediction)
+		sb.Write(" ")
+	}
+	for _, feature := range s.Features {
+		sb.Write(feature.ToString())
+	}
+	return sb.String()
 }
 
 func (s *Sample) LabelDoubleValue() float64 {

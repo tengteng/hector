@@ -24,6 +24,7 @@ type RandomForest struct {
 }
 
 func (self *RandomForest) SaveModel(path string) {
+	fmt.Println("Random forest save model.")
 	file, _ := os.Create(path)
 	defer file.Close()
 	for _, tree := range self.trees {
