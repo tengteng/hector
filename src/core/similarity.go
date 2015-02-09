@@ -8,7 +8,7 @@ import (
 	"util"
 )
 
-func GetSimilarity(sampleA *Sample, sampleB *Sample) float64 {
+func GetSampleSimilarity(sampleA *Sample, sampleB *Sample) float64 {
 	if len(sampleA.Features) == 0 || len(sampleB.Features) == 0 {
 		glog.Errorf("Empty sample.\n")
 		return 0.0
@@ -39,3 +39,11 @@ func GetSimilarity(sampleA *Sample, sampleB *Sample) float64 {
 	}
 	return equal_feature_num / float64(total_feature_num)
 }
+
+// func GetDatasetSimilarity(datasetA *DataSet, datasetB *DataSet, strict bool,
+// 	threshold float64) float64 {
+// 	if !strict {
+// 		RemoveLowFreqFeatures(datasetA, threshold)
+// 		RemoveLowFreqFeatures(datasetB, threshold)
+// 	}
+// }

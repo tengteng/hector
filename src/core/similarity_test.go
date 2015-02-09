@@ -23,7 +23,7 @@ func TestSimilarity1(t *testing.T) {
 	sample2.AddFeature(*f2)
 	sample2.AddFeature(*f3)
 
-	if GetSimilarity(sample1, sample2) != 1.0 {
+	if GetSampleSimilarity(sample1, sample2) != 1.0 {
 		t.Error("Similarity wrong.")
 	}
 }
@@ -37,7 +37,7 @@ func TestSimilarity2(t *testing.T) {
 	f1.FromString("1:1.0")
 	sample1.AddFeature(*f1)
 
-	if GetSimilarity(sample1, sample2) != 0.0 {
+	if GetSampleSimilarity(sample1, sample2) != 0.0 {
 		t.Error("Similarity wrong.")
 	}
 }
@@ -72,7 +72,7 @@ func TestSimilarity3(t *testing.T) {
 	sample2.AddFeature(*f6)
 	sample2.AddFeature(*f7)
 
-	if GetSimilarity(sample1, sample2) != 0.2857142857142857 {
+	if GetSampleSimilarity(sample1, sample2) != 0.2857142857142857 {
 		t.Errorf("Similarity wrong.")
 	}
 }
