@@ -26,9 +26,10 @@ func main() {
 		fmt.Println("AUC:")
 		fmt.Println(auc)
 	} else if action == "preprocess" {
+		p := new(preprocessor.Preprocessor)
 		if execution_plan_path, ok := params["execution_plan_path"]; ok {
 			fmt.Println("Preprocess ", execution_plan_path)
-			preprocessor.Run(execution_plan_path)
+			p.Run(execution_plan_path)
 		} else {
 			fmt.Println("No execution_plan_path found in config.")
 		}

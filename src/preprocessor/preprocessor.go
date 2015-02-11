@@ -26,6 +26,16 @@ type FeatureMetadata struct {
 	FEATURE_ID_TYPE    string
 }
 
+type Preprocessor struct {
+	// If feature value is string type and feature vector has fixed length,
+	// we treat string features as enums.
+	String_feature_enum_map map[string]int
+
+	// If input feature fields has feature name, use Feature_name_id_map for
+	// feature_name->feature_id mapping.
+	Feature_name_id_map map[string]int
+}
+
 func NewMetadata(metadata_file_path string) *FeatureMetadata {
 	file, err := os.Open(metadata_file_path)
 	if err != nil {
@@ -41,9 +51,9 @@ func NewMetadata(metadata_file_path string) *FeatureMetadata {
 }
 
 // parseField converts raw feature to featureId:featureValue.
-func parseField(index int, field string, field_type string,
-	string_id_lookup *map[string]int, frequency_lookup *map[int]int,
-	fixed_feature_num bool, initial_numeric_feature_number int) string {
+func (p *Preprocessor) parseField(index int, field string, field_type string,
+	frequency_lookup *map[int]int, fixed_feature_num bool,
+	initial_numeric_feature_number int) string {
 	if field_type == "int" || field_type == "float" {
 		_, err := strconv.ParseFloat(field, 64)
 		if err != nil {
@@ -54,22 +64,22 @@ func parseField(index int, field string, field_type string,
 		return fmt.Sprintf("%d:%s", index, field)
 	} else if field_type == "string" {
 		if fixed_feature_num {
-			if value, ok := (*string_id_lookup)[field]; ok {
+			if value, ok := p.String_feature_enum_map[field]; ok {
 				return fmt.Sprintf("%d:%d", index, value)
 			} else {
-				(*string_id_lookup)[field] =
-					len(*string_id_lookup)
+				p.String_feature_enum_map[field] =
+					len(p.String_feature_enum_map)
 				return fmt.Sprintf("%d:%d", index,
-					(*string_id_lookup)[field])
+					p.String_feature_enum_map[field])
 			}
 		} else {
 			// Generate frequency dictionary and return.
-			if id, ok := (*string_id_lookup)[field]; ok {
+			if id, ok := p.String_feature_enum_map[field]; ok {
 				(*frequency_lookup)[id]++
 			} else {
-				id = len(*string_id_lookup) +
+				id = len(p.String_feature_enum_map) +
 					initial_numeric_feature_number
-				(*string_id_lookup)[field] = id
+				p.String_feature_enum_map[field] = id
 				(*frequency_lookup)[id] = 1
 			}
 			return ""
@@ -80,7 +90,7 @@ func parseField(index int, field string, field_type string,
 	return ""
 }
 
-func ReadData(meta *FeatureMetadata) *[]string {
+func (p *Preprocessor) ReadData(meta *FeatureMetadata) *[]string {
 	fileList := []string{}
 	err := filepath.Walk(meta.INPUT_FILE_DIR,
 		func(path string, f os.FileInfo, err error) error {
@@ -121,11 +131,12 @@ func ReadData(meta *FeatureMetadata) *[]string {
 
 	result_date := []string{}
 
+	p.String_feature_enum_map = map[string]int{}
+	p.Feature_name_id_map = map[string]int{}
 	for _, filePath := range fileList {
 		file, _ := os.Open(filePath)
 		defer file.Close()
 
-		string_id_lookup := map[string]int{}
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
 			frequency_lookup := map[int]int{}
@@ -175,17 +186,23 @@ func ReadData(meta *FeatureMetadata) *[]string {
 						feature_types[feature_idx]
 					current_feature_id++
 				}
-				// var feature_id string
+				var feature_name string
 				var feature_value string
 				if meta.HAS_FEATURE_ID {
 					fid_val := strings.Split(field, ":")
-					// feature_id = fid_val[0]
+					feature_name = fid_val[0]
+					if id, ok := p.Feature_name_id_map[feature_name]; ok {
+						current_feature_id = id
+					} else {
+						current_feature_id = len(p.Feature_name_id_map)
+						p.Feature_name_id_map[feature_name] = current_feature_id
+					}
 					feature_value = fid_val[1]
 				} else {
 					feature_value = field
 				}
-				feature_str := parseField(current_feature_id,
-					feature_value, feature_type, &string_id_lookup,
+				feature_str := p.parseField(current_feature_id,
+					feature_value, feature_type,
 					&frequency_lookup,
 					meta.FIXED_FEATURE_NUM,
 					initial_numeric_feature_number)
@@ -230,7 +247,7 @@ func ReadData(meta *FeatureMetadata) *[]string {
 	return &result_date
 }
 
-func Run(execution_plan_path string) {
+func (p *Preprocessor) Run(execution_plan_path string) {
 	meta := NewMetadata(execution_plan_path)
-	ReadData(meta)
+	p.ReadData(meta)
 }
