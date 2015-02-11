@@ -281,7 +281,8 @@ func (algo *DeepNet) PredictMultiClassWithDropout(sample *core.Sample, dropout [
 	}
 }
 
-func (algo *DeepNet) GetDelta(samples []*core.Sample, dropout [][]int, adws [][][]float64, signal [][]float64, activities [][]float64, feature_ids map[int64]int) {
+func (algo *DeepNet) GetDelta(samples []*core.Sample, dropout [][]int, adws [][][]float64,
+	signal [][]float64, activities [][]float64, feature_ids map[int64]int) {
 	// Give a batch of samples, return accumulated dw without changing w
 	L := len(algo.Weights)
 	var weights [][]float64
@@ -519,7 +520,9 @@ func (algo *DeepNet) Train(dataset *core.DataSet) {
 				for p := int64(0); p < out_dim; p++ {
 					for q := int64(0); q <= in_dim; q++ {
 						dw := dweights[p][q]
-						if dw != 0 { // Especially for layer 0 - When input is sparse, avoid lots of zero updates
+						if dw != 0 {
+							// Especially for layer 0 - When input is sparse,
+							// avoid lots of zero updates.
 							w := weights[p][q]
 							if algo.Params.Momentum > 0 {
 								pdw := pdweights[p][q]

@@ -22,7 +22,8 @@ type FeatureMetadata struct {
 	FEATURE_TYPES      interface{}
 	LABEL_START        int
 	LABEL_COLUMN_INDEX int
-	HAS_FEATURE_INDEX  bool
+	HAS_FEATURE_ID     bool
+	FEATURE_ID_TYPE    string
 }
 
 func NewMetadata(metadata_file_path string) *FeatureMetadata {
@@ -174,8 +175,17 @@ func ReadData(meta *FeatureMetadata) *[]string {
 						feature_types[feature_idx]
 					current_feature_id++
 				}
+				// var feature_id string
+				var feature_value string
+				if meta.HAS_FEATURE_ID {
+					fid_val := strings.Split(field, ":")
+					// feature_id = fid_val[0]
+					feature_value = fid_val[1]
+				} else {
+					feature_value = field
+				}
 				feature_str := parseField(current_feature_id,
-					field, feature_type, &string_id_lookup,
+					feature_value, feature_type, &string_id_lookup,
 					&frequency_lookup,
 					meta.FIXED_FEATURE_NUM,
 					initial_numeric_feature_number)
