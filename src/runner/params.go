@@ -122,6 +122,7 @@ func PrepareParams() (string, string, string, string, map[string]string) {
 	hidden := flag.Int64("hidden", 10, "hidden neuron number")
 	profile := flag.String("profile", "", "profile file name")
 	model := flag.String("model", "", "model file name")
+	prediction := flag.String("prediction", "", "prediction file name")
 	action := flag.String("action", "", "train or test or preprocess, do both if action is empty string")
 	core := flag.Int("core", 2, "core number when run program")
 	dt_sample_ratio := flag.String("dt-sample-ratio", "1.0", "sampling ratio when split feature in decision tree")
@@ -161,6 +162,7 @@ func PrepareParams() (string, string, string, string, map[string]string) {
 	params["action"] = *action
 	params["model"] = *model
 	params["method"] = *method
+	params["prediction"] = *prediction
 	params["dt-sample-ratio"] = *dt_sample_ratio
 	params["dim"] = *dim
 	params["execution_plan_path"] = *execution_plan_path

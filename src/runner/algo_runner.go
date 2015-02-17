@@ -9,6 +9,7 @@ Currently, it only support algorithms which can solve binary classification prob
 package runner
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 
@@ -17,7 +18,9 @@ import (
 	"eval"
 )
 
-func AlgorithmRun(classifier algo.Classifier, train_path string, test_path string, pred_path string, params map[string]string) (float64, []*eval.LabelPrediction, error) {
+func AlgorithmRun(classifier algo.Classifier, train_path string,
+	test_path string, pred_path string, params map[string]string) (float64,
+	[]*eval.LabelPrediction, error) {
 	global, _ := strconv.ParseInt(params["global"], 10, 64)
 	train_dataset := core.NewDataSet()
 
@@ -33,7 +36,8 @@ func AlgorithmRun(classifier algo.Classifier, train_path string, test_path strin
 		return 0.5, nil, err
 	}
 	classifier.Init(params)
-	auc, predictions := AlgorithmRunOnDataSet(classifier, train_dataset, test_dataset, pred_path, params)
+	auc, predictions := AlgorithmRunOnDataSet(classifier, train_dataset,
+		test_dataset, pred_path, params)
 
 	return auc, predictions, nil
 }
@@ -60,7 +64,9 @@ func AlgorithmTrain(classifier algo.Classifier, train_path string, params map[st
 	return nil
 }
 
-func AlgorithmTest(classifier algo.Classifier, test_path string, pred_path string, params map[string]string) (float64, []*eval.LabelPrediction, error) {
+func AlgorithmTest(classifier algo.Classifier, test_path string,
+	pred_path string, params map[string]string) (float64,
+	[]*eval.LabelPrediction, error) {
 	global, _ := strconv.ParseInt(params["global"], 10, 64)
 
 	model_path, _ := params["model"]
@@ -77,12 +83,20 @@ func AlgorithmTest(classifier algo.Classifier, test_path string, pred_path strin
 		return 0.0, nil, err
 	}
 
-	auc, predictions := AlgorithmRunOnDataSet(classifier, nil, test_dataset, pred_path, params)
+	auc, predictions := AlgorithmRunOnDataSet(classifier, nil, test_dataset,
+		pred_path, params)
+
+	prediction_path, _ := params["prediction"]
+	if prediction_path != "" {
+		PrintPrediction(prediction_path, predictions)
+	}
 
 	return auc, predictions, nil
 }
 
-func AlgorithmRunOnDataSet(classifier algo.Classifier, train_dataset, test_dataset *core.DataSet, pred_path string, params map[string]string) (float64, []*eval.LabelPrediction) {
+func AlgorithmRunOnDataSet(classifier algo.Classifier, train_dataset,
+	test_dataset *core.DataSet, pred_path string,
+	params map[string]string) (float64, []*eval.LabelPrediction) {
 
 	if train_dataset != nil {
 		classifier.Train(train_dataset)
@@ -109,7 +123,9 @@ func AlgorithmRunOnDataSet(classifier algo.Classifier, train_dataset, test_datas
 }
 
 /* Regression */
-func RegAlgorithmRun(regressor algo.Regressor, train_path string, test_path string, pred_path string, params map[string]string) (float64, []*eval.RealPrediction, error) {
+func RegAlgorithmRun(regressor algo.Regressor, train_path string,
+	test_path string, pred_path string, params map[string]string) (float64,
+	[]*eval.RealPrediction, error) {
 	global, _ := strconv.ParseInt(params["global"], 10, 64)
 	train_dataset := core.NewRealDataSet()
 
@@ -125,7 +141,8 @@ func RegAlgorithmRun(regressor algo.Regressor, train_path string, test_path stri
 		return 0.5, nil, err
 	}
 	regressor.Init(params)
-	rmse, predictions := RegAlgorithmRunOnDataSet(regressor, train_dataset, test_dataset, pred_path, params)
+	rmse, predictions := RegAlgorithmRunOnDataSet(regressor, train_dataset,
+		test_dataset, pred_path, params)
 
 	return rmse, predictions, nil
 }
@@ -198,4 +215,12 @@ func RegAlgorithmRunOnDataSet(regressor algo.Regressor, train_dataset, test_data
 
 	rmse := eval.RegRMSE(predictions)
 	return rmse, predictions
+}
+
+func PrintPrediction(prediction_path string, predictions []*eval.LabelPrediction) {
+	pred_file, _ := os.Create(prediction_path)
+	defer pred_file.Close()
+	for _, prediction := range predictions {
+		pred_file.WriteString(fmt.Sprintf("%d\t%f\n", prediction.Label, prediction.Prediction))
+	}
 }

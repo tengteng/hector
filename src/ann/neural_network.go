@@ -1,15 +1,16 @@
 package ann
 
 import (
+	"bufio"
 	"bytes"
-	"encoding/gob"
 	"fmt"
 	"math"
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 
-	"github.com/golang/glog"
+	// "github.com/golang/glog"
 
 	"core"
 	"util"
@@ -51,13 +52,12 @@ func RandomInitVector(dim int64) *core.Vector {
 func (self *NeuralNetwork) SaveModel(path string) {
 	fmt.Println("SaveModel to: ", path)
 	sb := util.StringBuilder{}
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	err := enc.Encode(self)
-	if err != nil {
-		glog.Errorf("encode: %v\n", err)
-	}
-	sb.Write(buf.String())
+	sb.Int64(self.MaxLabel)
+	sb.Write("\n")
+	sb.Int64(self.Params.Hidden)
+	sb.Write("\n")
+	sb.Write(self.Model.L1.ToString())
+	sb.Write(self.Model.L2.ToString())
 	sb.WriteToFile(path)
 }
 
@@ -66,14 +66,32 @@ func (self *NeuralNetwork) LoadModel(path string) {
 	file, _ := os.Open(path)
 	defer file.Close()
 
+	scaner := bufio.NewScanner(file)
+	scaner.Scan()
+	line := strings.Trim(scaner.Text(), " ")
+	self.MaxLabel, _ = strconv.ParseInt(line, 10, 64)
+	scaner.Scan()
+	line = strings.Trim(scaner.Text(), " ")
+	self.Params.Hidden, _ = strconv.ParseInt(line, 10, 64)
+
 	var buf bytes.Buffer
-	buf.ReadFrom(file)
-	dec := gob.NewDecoder(&buf)
-	err := dec.Decode(self)
-	if err != nil {
-		glog.Errorf("decode error: %v\n", err)
-		return
+	var i int64
+	for i = 0; i < self.Params.Hidden; i++ {
+		scaner.Scan()
+		buf.WriteString(scaner.Text())
+		buf.WriteString("\n")
 	}
+	self.Model.L1 = core.NewMatrix()
+	self.Model.L1.FromString(buf.String())
+
+	buf.Reset()
+	for i = 0; i < self.Params.Hidden+1; i++ {
+		scaner.Scan()
+		buf.WriteString(scaner.Text())
+		buf.WriteString("\n")
+	}
+	self.Model.L2 = core.NewMatrix()
+	self.Model.L2.FromString(buf.String())
 }
 
 func (algo *NeuralNetwork) Init(params map[string]string) {

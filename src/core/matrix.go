@@ -1,6 +1,11 @@
 package core
 
-import "util"
+import (
+	"sort"
+	"strconv"
+	"strings"
+	"util"
+)
 
 type Matrix struct {
 	Data map[int64]*Vector
@@ -91,13 +96,56 @@ func (m *Matrix) ElemWiseAddMatrix(n *Matrix) *Matrix {
 	return ret
 }
 
-func (m *Matrix) ToString() []byte {
+func (m *Matrix) ToBytes() []byte {
 	sb := util.StringBuilder{}
-	for row, vec := range m.Data {
-		sb.Int64(row)
-		sb.Write("->")
-		sb.WriteBytes(vec.ToBytes())
+
+	keys := make([]int, len(m.Data))
+	i := 0
+	for k := range m.Data {
+		keys[i] = int(k)
+		i++
+	}
+	sort.Ints(keys)
+
+	for key := range keys {
+		sb.Int(key)
+		sb.Write(">")
+		sb.WriteBytes(m.Data[int64(key)].ToBytes())
 		sb.Write("\n")
 	}
 	return sb.Bytes()
+}
+
+func (m *Matrix) ToString() string {
+	sb := util.StringBuilder{}
+
+	keys := make([]int, len(m.Data))
+	i := 0
+	for k := range m.Data {
+		keys[i] = int(k)
+		i++
+	}
+	sort.Ints(keys)
+
+	for _, key := range keys {
+		sb.Int(key)
+		sb.Write(">")
+		sb.Write(m.Data[int64(key)].ToString())
+		sb.Write("\n")
+	}
+	return sb.String()
+}
+
+func (m *Matrix) FromString(buf string) {
+	lines := strings.Split(buf, "\n")
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+		tks := strings.Split(line, ">")
+		i, _ := strconv.Atoi(tks[0])
+		row := NewVector()
+		row.FromString(tks[1])
+		m.Data[int64(i)] = row
+	}
 }
