@@ -2,6 +2,9 @@ package core
 
 import (
 	"bufio"
+	"bytes"
+	"fmt"
+	"io"
 	"log"
 	"os"
 	"sort"
@@ -17,6 +20,27 @@ type FeatureSplit []float64
 
 func FindCategory(split []float64, value float64) int {
 	return sort.Search(len(split), func(i int) bool { return split[i] >= value })
+}
+
+func lineCounter(r io.Reader) (int, error) {
+	buf := make([]byte, 8196)
+	count := 0
+	lineSep := []byte{'\n'}
+
+	for {
+		c, err := r.Read(buf)
+		if err != nil && err != io.EOF {
+			return count, err
+		}
+
+		count += bytes.Count(buf[:c], lineSep)
+
+		if err == io.EOF {
+			break
+		}
+	}
+
+	return count, nil
 }
 
 /* RawDataSet */
@@ -82,6 +106,7 @@ func (d *RawDataSet) Load(path string) error {
 
 	scanner := bufio.NewScanner(file)
 
+	complete := 0
 	for scanner.Scan() {
 		line := strings.Replace(scanner.Text(), " ", "\t", -1)
 		tks := strings.Split(line, "\t")
@@ -104,6 +129,8 @@ func (d *RawDataSet) Load(path string) error {
 			}
 		}
 		d.AddSample(sample)
+		complete++
+		fmt.Printf("Loading lines: %d\r", complete)
 	}
 	if scanner.Err() != nil {
 		return scanner.Err()
@@ -139,6 +166,9 @@ func (d *DataSet) Load(path string, global_bias_feature_id int64) error {
 
 	scanner := bufio.NewScanner(file)
 
+	line_num, _ := lineCounter(file)
+	file.Seek(0, 0)
+	complete := 0.0
 	for scanner.Scan() {
 		line := strings.Replace(scanner.Text(), " ", "\t", -1)
 		tks := strings.Split(line, "\t")
@@ -171,6 +201,8 @@ func (d *DataSet) Load(path string, global_bias_feature_id int64) error {
 			sample.Features = append(sample.Features, Feature{global_bias_feature_id, 1.0})
 		}
 		d.AddSample(&sample)
+		complete += 1.0
+		fmt.Printf("Loading complete: %f%%\r", complete*100.0/float64(line_num))
 	}
 	if scanner.Err() != nil {
 		return scanner.Err()

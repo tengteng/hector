@@ -2,6 +2,7 @@ package lr
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -57,6 +58,7 @@ func (algo *LogisticRegression) Init(params map[string]string) {
 
 func (algo *LogisticRegression) Train(dataset *core.DataSet) {
 	algo.Model = make(map[int64]float64)
+	complete := 0.0
 	for step := 0; step < algo.Params.Steps; step++ {
 		for _, sample := range dataset.Samples {
 			prediction := algo.Predict(sample)
@@ -69,6 +71,8 @@ func (algo *LogisticRegression) Train(dataset *core.DataSet) {
 				model_feature_value += algo.Params.LearningRate * (err*feature.Value - algo.Params.Regularization*model_feature_value)
 				algo.Model[feature.Id] = model_feature_value
 			}
+			complete += 1.0
+			fmt.Printf("Training process done: %f%%\r", complete*100.0/float64((step+1)*len(dataset.Samples)))
 		}
 		algo.Params.LearningRate *= 0.9
 	}
