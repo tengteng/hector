@@ -6,7 +6,7 @@ import (
 	"code.google.com/p/plotinum/plotutil"
 )
 
-func ROC(predictions0 []*LabelPrediction) {
+func ROC(predictions0 []*LabelPrediction, roc_path string) {
 	result := []float64{}
 
 	predictions := []*LabelPrediction{}
@@ -55,7 +55,7 @@ func ROC(predictions0 []*LabelPrediction) {
 	}
 
 	// Save the plot to a PNG file.
-	if err := p.Save(64, 64, "ROC.png"); err != nil {
+	if err := p.Save(64, 64, roc_path); err != nil {
 		panic(err)
 	}
 }

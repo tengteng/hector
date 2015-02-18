@@ -90,6 +90,10 @@ func AlgorithmTest(classifier algo.Classifier, test_path string,
 	if prediction_path != "" {
 		PrintPrediction(prediction_path, predictions)
 	}
+	roc_path, _ := params["roc_path"]
+	if roc_path != "" {
+		eval.ROC(predictions, roc_path)
+	}
 
 	return auc, predictions, nil
 }
@@ -123,7 +127,6 @@ func AlgorithmRunOnDataSet(classifier algo.Classifier, train_dataset,
 	}
 
 	auc := eval.AUC(predictions)
-	eval.ROC(predictions)
 	return auc, predictions
 }
 
