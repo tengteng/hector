@@ -1,4 +1,4 @@
-GOPATH := ${PWD}:${PWD}/_vendor
+GOPATH := ${PWD}:${PWD}/_vendor:${GOPATH}
 export GOPATH
 
 default: install

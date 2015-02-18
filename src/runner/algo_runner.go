@@ -112,13 +112,18 @@ func AlgorithmRunOnDataSet(classifier algo.Classifier, train_dataset,
 		if pred_file != nil {
 			pred_file.WriteString(strconv.FormatFloat(prediction, 'g', 5, 64) + "\n")
 		}
-		predictions = append(predictions, &(eval.LabelPrediction{Label: sample.Label, Prediction: prediction}))
+		predictions = append(predictions,
+			&(eval.LabelPrediction{
+				Label:      sample.Label,
+				Prediction: prediction,
+				TestSample: sample}))
 	}
 	if pred_path != "" {
 		defer pred_file.Close()
 	}
 
 	auc := eval.AUC(predictions)
+	eval.ROC(predictions)
 	return auc, predictions
 }
 
@@ -217,10 +222,14 @@ func RegAlgorithmRunOnDataSet(regressor algo.Regressor, train_dataset, test_data
 	return rmse, predictions
 }
 
-func PrintPrediction(prediction_path string, predictions []*eval.LabelPrediction) {
+func PrintPrediction(prediction_path string,
+	predictions []*eval.LabelPrediction) {
 	pred_file, _ := os.Create(prediction_path)
 	defer pred_file.Close()
+	pred_file.WriteString("Label\tPrediction\tSample\n")
 	for _, prediction := range predictions {
-		pred_file.WriteString(fmt.Sprintf("%d\t%f\n", prediction.Label, prediction.Prediction))
+		pred_file.WriteString(
+			fmt.Sprintf("%d\t%f\t%s\n", prediction.Label,
+				prediction.Prediction, prediction.TestSample.ToString(false)))
 	}
 }

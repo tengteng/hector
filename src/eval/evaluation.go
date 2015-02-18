@@ -3,11 +3,14 @@ package eval
 import (
 	"math"
 	"sort"
+
+	"core"
 )
 
 type LabelPrediction struct {
 	Prediction float64
 	Label      int
+	TestSample *core.Sample
 }
 
 type RealPrediction struct { // Real valued
@@ -51,6 +54,7 @@ func AUC(predictions0 []*LabelPrediction) float64 {
 		return p1.Prediction > p2.Prediction
 	}
 
+	// predictions in descending order.
 	By(prediction).Sort(predictions)
 
 	pn := 0.0
