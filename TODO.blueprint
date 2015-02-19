@@ -1,0 +1,4 @@
+1. Based on a threshold, find/mark all badcases from test dataset;
+2. Based on badcases in test data, find similar cases in training dataset via similarity;
+3. Find most common badcases;
+4. Find conflicts in training dataset.
