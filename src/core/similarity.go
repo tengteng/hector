@@ -1,8 +1,6 @@
 package core
 
 import (
-	"fmt"
-
 	"github.com/golang/glog"
 
 	"util"
@@ -31,7 +29,6 @@ func GetSampleSimilarity(sampleA *Sample, sampleB *Sample) float64 {
 	equal_feature_num := 0.0
 	for _, common_id := range util.Intersect(
 		sampleA_feature_ids, sampleB_feature_ids).(*util.HashSet).Elements() {
-		fmt.Println(common_id)
 		if sampleA_mapbased.Features[common_id.(int64)] ==
 			sampleB_mapbased.Features[common_id.(int64)] {
 			equal_feature_num++
