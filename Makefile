@@ -3,7 +3,7 @@ export GOPATH
 
 default: install
 
-install: fmt
+install: fmt vet
 	go install ./...
 
 build: fmt vet

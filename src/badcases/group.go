@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"core"
+	"util"
 )
 
 type SamplePair struct {
@@ -24,8 +25,19 @@ func (v byDistance) Len() int           { return len(v) }
 func (v byDistance) Swap(i, j int)      { v[i], v[j] = v[j], v[i] }
 func (v byDistance) Less(i, j int) bool { return v[i].Distance < v[j].Distance }
 
-// Return samples from input samples. These N samples are closest group from
-// input.
+func (v byDistance) ToString() string {
+	sb := util.StringBuilder{}
+	for _, s := range v {
+		sb.Write(s.ToString())
+		sb.Write("\n")
+	}
+	return sb.String()
+}
+
+// Returns Top close sample pairs.
+// Each sample pair's distance should be less than threshold.
+// Return at most N sample pairs.
+// Return array is sorted by distance in ascending order.
 func TopCloseCasePairs(samples []*core.Sample, threshold float64, N int) (
 	ret []SamplePair) {
 	L := len(samples)
