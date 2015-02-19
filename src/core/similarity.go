@@ -6,6 +6,7 @@ import (
 	"util"
 )
 
+// This metric only calculates "#_of_equal_features/total#_of_features".
 func GetSampleSimilarity(sampleA *Sample, sampleB *Sample) float64 {
 	if len(sampleA.Features) == 0 || len(sampleB.Features) == 0 {
 		glog.Errorf("Empty sample.\n")

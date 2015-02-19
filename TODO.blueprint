@@ -1,5 +1,6 @@
 1. Based on a threshold, find/mark all badcases from test dataset;
-2. Based on badcases in test data, find similar cases in training dataset via similarity;
-3. Find most common badcases;
-4. Find conflicts in training dataset;
-5. Dataset similarity.
+2. Normalized float type features;
+3. Based on badcases in test data, find similar cases in training dataset via similarity;
+4. Find most common badcases;
+5. Find conflicts in training dataset;
+6. Dataset similarity.
