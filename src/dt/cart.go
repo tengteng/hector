@@ -272,6 +272,7 @@ func (dt *CART) PredictMultiClass(sample *core.Sample) *core.ArrayVector {
 }
 
 func (self *CART) SaveModel(path string) {
+	// ioutil.WriteFile(path, self.tree.ToBetterString(), 0600)
 	ioutil.WriteFile(path, self.tree.ToString(), 0600)
 }
 

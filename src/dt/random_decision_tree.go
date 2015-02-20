@@ -69,6 +69,28 @@ func (t *Tree) ToString() []byte {
 	return sb.Bytes()
 }
 
+func WriteTreeNode(id int, nodes []*TreeNode, sb *util.StringBuilder) {
+	if id == -1 {
+		return
+	}
+	node := nodes[id]
+	WriteTreeNode(node.left, nodes, sb)
+	for i := 0; i < node.depth; i++ {
+		sb.Write("----")
+	}
+	sb.Int(id)
+	sb.Write("\n")
+	WriteTreeNode(node.right, nodes, sb)
+}
+
+func (t *Tree) ToBetterString() []byte {
+	sb := util.StringBuilder{}
+	sb.Int(len(t.nodes))
+	sb.Write("\n")
+	WriteTreeNode(0, t.nodes, &sb)
+	return sb.Bytes()
+}
+
 func (t *Tree) FromString(buf string) {
 	lines := strings.Split(buf, "\n")
 	size, _ := strconv.Atoi(lines[0])

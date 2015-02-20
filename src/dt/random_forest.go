@@ -110,9 +110,10 @@ func (dt *RandomForest) Predict(sample *core.Sample) float64 {
 	predictions := 0.0
 	total := 0.0
 	for _, tree := range dt.trees {
-		node, _ := PredictBySingleTree(tree, msample)
+		node, path := PredictBySingleTree(tree, msample)
 		predictions += node.prediction.GetValue(1)
 		total += 1.0
+		fmt.Println(path)
 	}
 	return predictions / total
 }
