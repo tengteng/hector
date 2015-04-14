@@ -14,3 +14,5 @@
 ./bin/hector-run --method ann --action test --test data/test/a1a.t --model model/a1a.model --prediction data/prediction/a1a.prediction --roc_path ./ROC.png
 
 ./bin/hector-run --action preprocess --execution_plan_path ./example/features.metadata.example.train
+
+./bin/hector-cv --method lr --train data/train/a6a --cv 10
