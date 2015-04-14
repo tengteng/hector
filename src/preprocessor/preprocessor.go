@@ -54,7 +54,10 @@ func NewMetadata(metadata_file_path string) *FeatureMetadata {
 func (p *Preprocessor) parseField(index int, field string, field_type string,
 	frequency_lookup *map[int]int, fixed_feature_num bool,
 	initial_numeric_feature_number int) string {
-	if field_type == "int" || field_type == "float" {
+	if field == "" {
+		return ""
+	}
+	if field_type == "int" || field_type == "float" || field_type == "double" {
 		_, err := strconv.ParseFloat(field, 64)
 		if err != nil {
 			glog.Errorf(
@@ -111,11 +114,17 @@ func (p *Preprocessor) ReadData(meta *FeatureMetadata) *[]string {
 	// 1. default type is string;
 	// 2. string type features as text STRING, the result featureId will be
 	// string dictionary Id, the value will be the string frequency.
-	feature_types := map[int]string{}
+	feature_types := make(map[int]string, meta.FEATURE_NUM)
 	var initial_numeric_feature_number int
 	if meta.FIXED_FEATURE_NUM {
-		for i, feature_type := range meta.FEATURE_TYPES.([]interface{}) {
-			feature_types[i] = feature_type.(string)
+		if feature_t, ok := meta.FEATURE_TYPES.(string); ok {
+			for k := 0; k < meta.FEATURE_NUM; k++ {
+				feature_types[k] = feature_t
+			}
+		} else {
+			for i, feature_type := range meta.FEATURE_TYPES.([]interface{}) {
+				feature_types[i] = feature_type.(string)
+			}
 		}
 	} else {
 		feature_type_config :=
@@ -159,14 +168,15 @@ func (p *Preprocessor) ReadData(meta *FeatureMetadata) *[]string {
 
 				// Deal with the label field.
 				if i == meta.LABEL_COLUMN_INDEX {
-					label, e := strconv.Atoi(field)
+					label, e := strconv.ParseFloat(field, 64)
 					if e != nil {
 						glog.Errorf(
 							"Error when converting label: %v\n", err)
 						return nil
 					}
+					label_i := int(label)
 					// We want labels always starts from 0.
-					case_label = strconv.Itoa(label -
+					case_label = strconv.Itoa(label_i -
 						meta.LABEL_START)
 					continue
 				}

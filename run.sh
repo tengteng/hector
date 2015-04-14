@@ -12,3 +12,5 @@
 
 # Use nerual network model@model/a1a.model to test data@data/test/a1a.t then save prediction@data/prediction/a1a.prediction and plot roc@./ROC.png
 ./bin/hector-run --method ann --action test --test data/test/a1a.t --model model/a1a.model --prediction data/prediction/a1a.prediction --roc_path ./ROC.png
+
+./bin/hector-run --action preprocess --execution_plan_path ./example/features.metadata.example.train
