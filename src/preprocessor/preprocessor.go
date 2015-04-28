@@ -161,8 +161,7 @@ func (p *Preprocessor) ReadData(meta *FeatureMetadata) *[]string {
 				// in metadata, throw an error.
 				if meta.FIXED_FEATURE_NUM &&
 					len(line) != meta.FEATURE_NUM+1 {
-					glog.Errorf("Error case format: %v\n",
-						line)
+					glog.Errorf("Error case format, Num offeatures does not match metadata.\nActual: [%d]\nExpected: [%d]\nLine:\n%v\n", len(line)-1, meta.FEATURE_NUM, line)
 					return nil
 				}
 
