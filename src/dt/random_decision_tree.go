@@ -127,7 +127,25 @@ type RandomDecisionTree struct {
 }
 
 func (self *RandomDecisionTree) SaveModel(path string) {
-
+	fmt.Println("SaveModel to: ", path)
+	sb := util.StringBuilder{}
+	sb.Write("TreeCount:\t")
+	sb.Int(self.params.TreeCount)
+	sb.Write("\n")
+	sb.Write("MinLeafSize:\t")
+	sb.Int(self.params.MinLeafSize)
+	sb.Write("\n")
+	sb.Write("MaxDepth:\t")
+	sb.Int(self.params.MaxDepth)
+	sb.Write("\n")
+	for i, t := range self.trees {
+		sb.Write("Tree:")
+		sb.Int(i)
+		sb.Write("\n")
+		sb.WriteBytes(t.ToString())
+		sb.Write("\n")
+	}
+	sb.WriteToFile(path)
 }
 
 func (self *RandomDecisionTree) LoadModel(path string) {
