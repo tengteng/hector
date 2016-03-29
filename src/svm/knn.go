@@ -7,6 +7,7 @@ import (
 
 	"core"
 	"eval"
+	"util"
 )
 
 type KNN struct {
@@ -16,7 +17,20 @@ type KNN struct {
 }
 
 func (self *KNN) SaveModel(path string) {
-
+	sb := util.StringBuilder{}
+	sb.Int(self.k)
+	sb.Write("\n")
+	for _, l := range self.labels {
+		sb.Int(l)
+		sb.Write("\t")
+	}
+	sb.Write("\n")
+	for i, v := range self.sv {
+		sb.Int(i)
+		sb.Write("\t")
+		sb.WriteBytes(v.ToBytes())
+		sb.Write("\n")
+	}
 }
 
 func (self *KNN) LoadModel(path string) {
