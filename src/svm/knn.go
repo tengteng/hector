@@ -34,7 +34,24 @@ func (self *KNN) SaveModel(path string) {
 }
 
 func (self *KNN) LoadModel(path string) {
+	file, _ := os.Open(path)
+	defer file.Close()
 
+	scaner := bufio.NewScanner(file)
+	// Read k
+	scaner.Scan()
+	line := scaner.Text()
+	// Read labels
+	scaner.Scan()
+	line = scaner.Text()
+	// Read sv
+	// for scaner.Scan() {
+	// 	line = scaner.Text()
+	// 	tks := strings.Split(line, "\t")
+	// 	fid, _ := strconv.ParseInt(tks[0], 10, 64)
+	// 	fw, _ := strconv.ParseFloat(tks[1], 64)
+	// 	self.sv.SetValue(fid, fw)
+	// }
 }
 
 func (c *KNN) Init(params map[string]string) {
